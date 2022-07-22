@@ -12,7 +12,7 @@ namespace userDemo1.Context
     using System;
     using System.Collections.Generic;
     
-    public partial class UserPermission
+    public partial class RolesPermission
     {
         public int Id { get; set; }
         public string ModuleName { get; set; }
@@ -20,8 +20,8 @@ namespace userDemo1.Context
         public bool AddPermission { get; set; }
         public bool EditPermission { get; set; }
         public bool DeletePermission { get; set; }
-        public int UserId { get; set; }
+        public int RoleId { get; set; }
     
-        public virtual User User { get; set; }
+        public virtual Role Role { get; set; }
     }
 }

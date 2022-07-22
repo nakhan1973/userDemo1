@@ -1,0 +1,54 @@
+﻿@model IEnumerable<userDemo1.Context.Role>
+@using userDemo1.Models;
+@{
+    ViewBag.Title = "Roles";
+    var rights = (UserRights)TempData["userRights"];
+}
+
+<h2>Index</h2>
+@if (rights.ViewAuthorized)
+{
+    <p>
+        @if (rights.AddAuthorized)
+        {@Html.ActionLink("Create New", "Create")}
+    </p>
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.RoleName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Active)
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.RoleName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Active)
+                </td>
+                <td>
+                    @if (rights.EditAuthorized)
+                    {
+                        <a href="@Url.Action("Create", new { item.RoleId, item.RoleName, item.Active })"><i class="glyphicon glyphicon-pencil"></i></a>
+                        <a href="@Url.Action("Index", "Permission", new { item.RoleId })" style="padding-left:5px;"><i class="glyphicon glyphicon-eye-open"></i></a>
+                    }
+                    @if (rights.DeleteAuthorized)
+                    {
+                        <a href="@Url.Action("Delete", new { item.RoleId })" style="padding-left:15px;"><i class="glyphicon glyphicon-trash"></i></a>
+                    }
+                </td>
+            </tr>
+        }
+    </table>
+
+}
+else
+{
+    @Html.Partial("_UnAuthorizedView");
+}

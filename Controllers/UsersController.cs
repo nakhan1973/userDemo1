@@ -1,28 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Linq;
 using System.Web.Mvc;
 using userDemo1.Context;
+using userDemo1.Models;
 
 namespace userDemo1.Controllers
 {
     public class UsersController : Controller
     {
-        dbtestEntities _dbContext = new dbtestEntities();
+        private dbtestEntities _dbContext = new dbtestEntities();
 
-
-        // GET: Users
         public ActionResult Index()
         {
-            if (IsUserLoggedIn())
+            if (Authentication.IsUserLoggedIn())
             {
-                var loggedInUser = (User)Session["LoggedInUser"];
-                TempData["ViewAuthorized"] = loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "users" && x.ViewPermission == true).Any();
-                TempData["AddAuthorized"] = loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "users" && x.AddPermission == true).Any();
-                TempData["EditAuthorized"] = loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "users" && x.EditPermission == true).Any();
-                TempData["DeleteAuthorized"] = loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "users" && x.DeletePermission == true).Any();
-
+                var userRights = Authorization.GetAuthorizedRights("Users");
+                TempData["userRights"] = userRights;
                 var usrList = _dbContext.Users.ToList();
                 return View(usrList);
             }
@@ -32,23 +24,15 @@ namespace userDemo1.Controllers
             }
         }
 
-        private bool IsUserLoggedIn()
-        {
-            if (Session["LoggedInUser"] != null)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
         [HttpGet]
         public ActionResult Create(User editModel)
         {
-            if (IsUserLoggedIn())
+            if (Authentication.IsUserLoggedIn())
             {
+                if (editModel.UserId != 0)
+                {
+                    editModel = _dbContext.Users.Where(u => u.UserId == editModel.UserId).FirstOrDefault();
+                }
                 return View(editModel);
             }
             else
@@ -56,13 +40,13 @@ namespace userDemo1.Controllers
                 return RedirectToAction("Index", "Home");
             }
         }
+
         [HttpPost]
         public ActionResult AddUpdateUser(User model)
         {
             if (ModelState.IsValid)
             {
-                var loggedInUser = (User)Session["LoggedInUser"];
-                
+                var userRights = Authorization.GetAuthorizedRights("Users");
                 User userRecord = new User();
 
                 userRecord.UserId = model.UserId;
@@ -75,7 +59,7 @@ namespace userDemo1.Controllers
 
                 if (model.UserId == 0)
                 {
-                    if (loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "users" && x.AddPermission == true).Any())
+                    if (userRights.AddAuthorized)
                     {
                         _dbContext.Users.Add(userRecord);
                         _dbContext.SaveChanges();
@@ -83,12 +67,12 @@ namespace userDemo1.Controllers
                 }
                 else
                 {
-                    if (loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "users" && x.EditPermission == true).Any())
+                    if (userRights.EditAuthorized)
                     {
                         _dbContext.Entry(userRecord).State = System.Data.Entity.EntityState.Modified;
                         _dbContext.SaveChanges();
                     }
-                } 
+                }
             }
             ModelState.Clear();
             var userList = _dbContext.Users.ToList();
@@ -97,10 +81,10 @@ namespace userDemo1.Controllers
 
         public ActionResult Delete(int UserId)
         {
-            if (IsUserLoggedIn())
+            if (Authentication.IsUserLoggedIn())
             {
-                var loggedInUser = (User)Session["LoggedInUser"];
-                if (loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "users" && x.DeletePermission == true).Any())
+                var userRights = Authorization.GetAuthorizedRights("Users");
+                if (userRights.DeleteAuthorized)
                 {
                     var userRecord = _dbContext.Users.Where(x => x.UserId == UserId).FirstOrDefault();
                     if (userRecord != null)
@@ -109,7 +93,6 @@ namespace userDemo1.Controllers
                         _dbContext.SaveChanges();
                     }
                     var userList = _dbContext.Users.ToList();
-                    //return View("Index", userList);
                     return RedirectToAction("Index", userList);
                 }
             }
@@ -118,6 +101,22 @@ namespace userDemo1.Controllers
                 return RedirectToAction("Index", "Home");
             }
             return View();
+        }
+
+        public ActionResult RemoveRole(int UserId, Role role)
+        {
+            var user = _dbContext.Users.Where(x => x.UserId == UserId).FirstOrDefault();
+            return RedirectToAction("Create", user);
+        }
+
+        public ActionResult AddRole(int UserId, Role role)
+        {
+            Role roleFromDb = _dbContext.Roles.FirstOrDefault(x => x.RoleId == role.RoleId);
+            _dbContext.Users.FirstOrDefault(x => x.UserId == UserId).Roles.Add(roleFromDb);
+            _dbContext.SaveChanges();
+
+            var user = _dbContext.Users.Where(x => x.UserId == UserId).FirstOrDefault();
+            return RedirectToAction("Create", user);
         }
     }
 }

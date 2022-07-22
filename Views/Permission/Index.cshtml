@@ -1,80 +1,81 @@
-﻿@model userDemo1.Context.User
-
+﻿@model userDemo1.Context.Role
+@using userDemo1.Models;
 @{
     ViewBag.Title = "Permissions";
+    var rights = (UserRights)TempData["userRights"];
 }
 
-<h2>User's Permissions'</h2>
+<h2>Role's Permissions'</h2>
+@if (rights.ViewAuthorized)
+{
+    <div class="container">
+        <label>Role Name: @Model.RoleName</label>
 
-<div class="container">
-    <div class="row">
-        <div class="col-sm-6">
-            <label>User Name: @Model.FirstName &nbsp; @Model.LastName  </label>
-        </div>
-        <div class="col-sm-6">
-            <label>User Email: @Model.Email </label>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm-6">
-            <label>Phone Number: @Html.DisplayFor(modelItem => modelItem.Phone)</label>
-        </div>
-        <div class="col-sm-6">
-            <label>Status: @Html.DisplayFor(modelItem => modelItem.Status)</label>
-        </div>
-    </div>
-
-    <hr /><hr />
-    <p>
-        @Html.ActionLink("Create New", "Create", new { userId = Model.UserId })  |
-        @Html.ActionLink("Back to User List", "Index","Users")
-    </p>
-    <table class="table">
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.UserPermissions.First().ModuleName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UserPermissions.First().ViewPermission)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UserPermissions.First().AddPermission)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UserPermissions.First().EditPermission)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UserPermissions.First().DeletePermission)
-            </th>
-        </tr>
-
-        @if (Model.UserPermissions.Count > 0)
-        {
-            foreach (var item in Model.UserPermissions)
+        <hr /><hr />
+        <p>
+            @if (rights.AddAuthorized)
             {
-                <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.ModuleName)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.ViewPermission)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.AddPermission)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.EditPermission)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.DeletePermission)
-                    </td>
-                    <td>
-                        <a href="@Url.Action("Create", new { item.Id, item.ModuleName, item.ViewPermission, item.AddPermission, item.EditPermission, item.DeletePermission, item.UserId, item.User })"><i class="glyphicon glyphicon-pencil"></i></a>  |
-                        <a href="@Url.Action("Delete", new { item.Id })"><i class="glyphicon glyphicon-trash"></i></a>
-                    </td>
-                </tr>
+                @Html.ActionLink("Create New", "Create", new { RoleId = Model.RoleId })
             }
-        }
+        </p>
+        <table class="table">
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.RolesPermissions.First().ModuleName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.RolesPermissions.First().ViewPermission)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.RolesPermissions.First().AddPermission)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.RolesPermissions.First().EditPermission)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.RolesPermissions.First().DeletePermission)
+                </th>
+            </tr>
 
-    </table>
-</div>
+            @if (Model.RolesPermissions.Count > 0)
+            {
+                foreach (var item in Model.RolesPermissions)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ModuleName)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ViewPermission)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.AddPermission)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.EditPermission)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.DeletePermission)
+                        </td>
+                        <td>
+                            @if (rights.EditAuthorized)
+                            {
+                                <a href="@Url.Action("Create", new { item.Id, item.ModuleName, item.ViewPermission, item.AddPermission, item.EditPermission, item.DeletePermission, item.RoleId, item.Role })"><i class="glyphicon glyphicon-pencil"></i></a>
+                            }
+                            @if (rights.DeleteAuthorized)
+                            {
+                                <a href="@Url.Action("Delete", new { item.Id })" style="padding-left:15px;"><i class="glyphicon glyphicon-trash"></i></a>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        </table>
+    </div>
+    <hr />
+    @Html.ActionLink("Back to Role's List", "Index", "Roles")
+}
+else
+{
+    @Html.Partial("_UnAuthorizedView");
+}

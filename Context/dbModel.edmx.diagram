@@ -5,9 +5,11 @@
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
       <Diagram DiagramId="a9d2e2002d2d4e788125148196930454" Name="Diagram1">
-        <EntityTypeShape EntityType="dbtestModel.UserPermission" Width="1.5" PointX="3" PointY="1" IsExpanded="true" />
         <EntityTypeShape EntityType="dbtestModel.User" Width="1.5" PointX="0.75" PointY="1" IsExpanded="true" />
-        <AssociationConnector Association="dbtestModel.FK_UserPermissions_Users" ManuallyRouted="false" />
+        <EntityTypeShape EntityType="dbtestModel.Role" Width="1.5" PointX="3.625" PointY="1.375" />
+        <AssociationConnector Association="dbtestModel.RolesUsers" />
+        <EntityTypeShape EntityType="dbtestModel.RolesPermission" Width="1.5" PointX="5.875" PointY="1.125" />
+        <AssociationConnector Association="dbtestModel.FK_RolesPermissions_Roles" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

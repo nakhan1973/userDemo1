@@ -1,82 +1,141 @@
 ﻿@model userDemo1.Context.User
 
 @{
-    ViewBag.Title = "Create";
+    ViewBag.Title = "User";
+    List<userDemo1.Context.Role> Roles = userDemo1.Models.Authorization.GetAllRoles();
+    var allRoles = Roles.Where(r => !Model.Roles.Select(x => x.RoleId).Contains(r.RoleId)).ToList();
 }
 
-<h2>Create</h2>
-
-
-@using (Html.BeginForm("AddUpdateUser", "Users",FormMethod.Post))
-{
-    @Html.AntiForgeryToken()
-    
-    <div class="form-horizontal">
-        <h4>User Information</h4>
-        <hr />
-        @Html.HiddenFor(model => model.UserId)
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        <div class="form-group">
-            @Html.LabelFor(model => model.FirstName, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.FirstName, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.FirstName, "", new { @class = "text-danger" })
+<h2>User Information</h2>
+<hr />
+<div class="container">
+    <div class="row">
+        <div class="col-md-5">
+            <div>
+                @Html.ActionLink("Back to List", "Index")
             </div>
-        </div>
+            @using (Html.BeginForm("AddUpdateUser", "Users", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.LastName, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.LastName, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.LastName, "", new { @class = "text-danger" })
-            </div>
-        </div>
+                <div class="form-horizontal">
+                    <h4>User Information</h4>
+                    <hr />
+                    @Html.HiddenFor(model => model.UserId)
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.FirstName, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.FirstName, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.FirstName, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.Phone, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Phone, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Phone, "", new { @class = "text-danger" })
-            </div>
-        </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.LastName, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.LastName, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.LastName, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
-            </div>
-        </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Phone, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.Phone, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.Phone, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.Password, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
-            </div>
-        </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.Status, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                <div class="checkbox">
-                    @Html.EditorFor(model => model.Status)
-                    @Html.ValidationMessageFor(model => model.Status, "", new { @class = "text-danger" })
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Password, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Status, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            <div class="checkbox">
+                                @Html.EditorFor(model => model.Status)
+                                @Html.ValidationMessageFor(model => model.Status, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-md-offset-2 col-md-10">
+                            <input type="submit" value="Submit" class="btn btn-default" />
+                            <input type="reset" value="Cancel" class="btn btn-danger" />
+                        </div>
+                    </div>
                 </div>
-            </div>
+            }
         </div>
-
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Submit" class="btn btn-default" />
-                <input type="reset" value="Cancel" class="btn btn-danger" />
-            </div>
+        <div class="col-md-7">
+            @if (Model != null)
+            {
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-6">
+                            @if (Model.Roles != null)
+                            {
+                                <h4>Roles Assigned</h4>
+                                <ul>
+                                    @foreach (var role in Model.Roles)
+                                    {
+                                        <li>
+                                            @using (Html.BeginForm("RemoveRole", "Users", FormMethod.Post))
+                                            {
+                                                @Html.HiddenFor(x => x.UserId)
+                                                <input type="hidden" value="@role.RoleId" id="RoleId" name="RoleId" />
+                                                <label>@role.RoleName</label>
+                                                <input type="hidden" id="RoleName" value="@role.RoleName" name="RoleName" />
+                                                <input type="hidden" value="@role.Active.ToString()" id="Active" name="Active" />
+                                                <input type="submit" value="Remove" class="btn btn-danger" style="margin-bottom:5px;" />
+                                            }
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            @if (allRoles != null)
+                            {
+                                <h4>Role Not Assigned</h4>
+                                <ul>
+                                    @foreach (var role in allRoles)
+                                    {
+                                        <li>
+                                            @using (Html.BeginForm("AddRole", "Users", Model.UserId, FormMethod.Post))
+                                            {
+                                                @Html.HiddenFor(x => x.UserId)
+                                                <input type="hidden" value="@role.RoleId" id="RoleId" name="RoleId" />
+                                                <label>@role.RoleName</label>
+                                                <input type="hidden" id="RoleName" value="@role.RoleName" name="RoleName" />
+                                                <input type="hidden" value="@role.Active.ToString()" id="Active" name="Active" />
+                                                <input type="submit" value="Add" class="btn btn-default" style="margin-bottom:5px;" />
+                                            }
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
     </div>
-}
-
-<div>
-    @Html.ActionLink("Back to List", "Index")
 </div>
 
 @section Scripts {

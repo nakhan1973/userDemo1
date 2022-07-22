@@ -25,9 +25,8 @@ namespace userDemo1.Context
             throw new UnintentionalCodeFirstException();
         }
     
-        public virtual DbSet<UserPermission> UserPermissions { get; set; }
         public virtual DbSet<User> Users { get; set; }
-
-        public System.Data.Entity.DbSet<userDemo1.Models.Operation> Customers { get; set; }
+        public virtual DbSet<Role> Roles { get; set; }
+        public virtual DbSet<RolesPermission> RolesPermissions { get; set; }
     }
 }

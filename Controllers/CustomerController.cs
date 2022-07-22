@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
-using userDemo1.Context;
 using userDemo1.Models;
 
 namespace userDemo1.Controllers
@@ -9,18 +8,6 @@ namespace userDemo1.Controllers
     public class CustomerController : Controller
     {
         private static List<Customer> customerList = null;
-
-        private bool IsUserLoggedIn()
-        {
-            if (Session["LoggedInUser"] != null)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
 
         public ActionResult Index()
         {
@@ -35,14 +22,10 @@ namespace userDemo1.Controllers
                         new Customer { Id=2945, FullName="Mary Michael ", Email="mary.michael@gmail.com",Phone="(533) 112 5576", DateOfBirth="12-07-2000",Gender= Gender.Female}
                     };
             }
-            if (IsUserLoggedIn())
+            if (Authentication.IsUserLoggedIn())
             {
-                var loggedInUser = (User)Session["LoggedInUser"];
-                TempData["ViewAuthorized"] = loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "customer" && x.ViewPermission == true).Any();
-                TempData["AddAuthorized"] = loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "customer" && x.AddPermission == true).Any();
-                TempData["EditAuthorized"] = loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "customer" && x.EditPermission == true).Any();
-                TempData["DeleteAuthorized"] = loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "customer" && x.DeletePermission == true).Any();
-
+                var userRights = Authorization.GetAuthorizedRights("Customers");
+                TempData["userRights"] = userRights;
                 return View(customerList);
             }
             else
@@ -53,10 +36,10 @@ namespace userDemo1.Controllers
 
         public ActionResult Delete(int Id)
         {
-            if (IsUserLoggedIn())
+            if (Authentication.IsUserLoggedIn())
             {
-                var loggedInUser = (User)Session["LoggedInUser"];
-                if (loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "customer" && x.DeletePermission == true).Any())
+                var userRights = Authorization.GetAuthorizedRights("Customers");
+                if (userRights.DeleteAuthorized)
                 {
                     var customerRecord = customerList.Where(x => x.Id == Id).FirstOrDefault();
                     if (customerRecord != null)
@@ -76,7 +59,7 @@ namespace userDemo1.Controllers
         [HttpGet]
         public ActionResult Create(Customer editModel)
         {
-            if (IsUserLoggedIn())
+            if (Authentication.IsUserLoggedIn())
             {
                 return View(editModel);
             }
@@ -91,18 +74,18 @@ namespace userDemo1.Controllers
         {
             if (ModelState.IsValid)
             {
-                var loggedInUser = (User)Session["LoggedInUser"];
+                var userRights = Authorization.GetAuthorizedRights("Customers");
 
                 if (model.Id == 0)
                 {
-                    if (loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "customer" && x.AddPermission == true).Any())
+                    if (userRights.AddAuthorized)
                     {
                         customerList.Add(model);
                     }
                 }
                 else
                 {
-                    if (loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "customer" && x.EditPermission == true).Any())
+                    if (userRights.EditAuthorized)
                     {
                         Customer customerRecord = customerList.Where(x => x.Id == model.Id).FirstOrDefault();
 

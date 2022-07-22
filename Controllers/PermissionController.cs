@@ -1,84 +1,106 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Linq;
 using System.Web.Mvc;
 using userDemo1.Context;
+using userDemo1.Models;
 
 namespace userDemo1.Controllers
 {
     public class PermissionController : Controller
     {
-        dbtestEntities _dbContext = new dbtestEntities();
+        private dbtestEntities _dbContext = new dbtestEntities();
+
         // GET: Permission
-        public ActionResult Index(int userId)
+        public ActionResult Index(int RoleId)
         {
-            User user = GetUserInformation(userId);
-            Session.Add("User", user);
-
-            return View(user);
-        }
-
-        private User GetUserInformation(int userId)
-        {
-            var test = _dbContext.Users.Include("UserPermissions").Where(x => x.UserId == userId).FirstOrDefault();
-            //var user = _dbContext.Users.Where(x => x.UserId == userId).FirstOrDefault();
-            //var permission = _dbContext.UserPermissions.Where(p => p.UserId == userId).ToList();
-            //user.UserPermissions = permission;
-            return test;
-        }
-
-        public ActionResult Create(UserPermission editModel,int userId)
-        {
-            if (editModel == null)
+            if (Authentication.IsUserLoggedIn())
             {
-                editModel = new UserPermission();
-                editModel.UserId = userId;
+                var userRights = Authorization.GetAuthorizedRights("Permissions");
+                TempData["userRights"] = userRights;
+                var roleWithPermissions = GetRoleInformation(RoleId);
+                return View(roleWithPermissions);
             }
-            return View(editModel);
+            else
+            {
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
+        private Role GetRoleInformation(int RoleId)
+        {
+            var roleWithPermissions = _dbContext.Roles.Where(x => x.RoleId == RoleId).FirstOrDefault();
+            return roleWithPermissions;
+        }
+
+        public ActionResult Create(RolesPermission editModel, int RoleId)
+        {
+            if (Authentication.IsUserLoggedIn())
+            {
+                if (editModel == null)
+                {
+                    editModel = new RolesPermission();
+                    editModel.RoleId = RoleId;
+                }
+                return View(editModel);
+            }
+            else
+            {
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         [HttpPost]
-        public ActionResult AddUpdatePermission(UserPermission model)
+        public ActionResult AddUpdatePermission(RolesPermission model)
         {
             if (ModelState.IsValid)
             {
-                UserPermission userPermission = new UserPermission();
+                RolesPermission RolePermission = new RolesPermission();
 
-                userPermission.Id = model.Id;
-                userPermission.ModuleName = model.ModuleName;
-                userPermission.ViewPermission = model.ViewPermission;
-                userPermission.AddPermission = model.AddPermission;
-                userPermission.EditPermission = model.EditPermission;
-                userPermission.DeletePermission = model.DeletePermission;
-                userPermission.UserId = model.UserId;
+                RolePermission.Id = model.Id;
+                RolePermission.ModuleName = model.ModuleName;
+                RolePermission.ViewPermission = model.ViewPermission;
+                RolePermission.AddPermission = model.AddPermission;
+                RolePermission.EditPermission = model.EditPermission;
+                RolePermission.DeletePermission = model.DeletePermission;
+                RolePermission.RoleId = model.RoleId;
 
                 if (model.Id == 0)
                 {
-                    _dbContext.UserPermissions.Add(userPermission);
+                    var userRights = Authorization.GetAuthorizedRights("Permissions");
+                    if (userRights.AddAuthorized)
+                    {
+                        _dbContext.RolesPermissions.Add(RolePermission);
+                        _dbContext.SaveChanges();
+                    }
                 }
                 else
                 {
-                    _dbContext.Entry(userPermission).State = System.Data.Entity.EntityState.Modified;
+                    var userRights = Authorization.GetAuthorizedRights("Permissions");
+                    if (userRights.EditAuthorized)
+                    {
+                        _dbContext.Entry(RolePermission).State = System.Data.Entity.EntityState.Modified;
+                        _dbContext.SaveChanges();
+                    }
                 }
-                _dbContext.SaveChanges();
             }
             ModelState.Clear();
-            User user = GetUserInformation(model.UserId);
-            return RedirectToAction("Index", user);
+            Role role = GetRoleInformation(model.RoleId);
+            return RedirectToAction("Index", role);
         }
 
         public ActionResult Delete(int Id)
         {
-            var userPermission = _dbContext.UserPermissions.Where(x => x.Id == Id).FirstOrDefault();
-            if (userPermission != null)
+            var rolePermission = _dbContext.RolesPermissions.Where(x => x.Id == Id).FirstOrDefault();
+            if (rolePermission != null)
             {
-                _dbContext.UserPermissions.Remove(userPermission);
-                _dbContext.SaveChanges();
+                var userRights = Authorization.GetAuthorizedRights("Permissions");
+                if (userRights.DeleteAuthorized)
+                {
+                    _dbContext.RolesPermissions.Remove(rolePermission);
+                    _dbContext.SaveChanges();
+                }
             }
-            User user = GetUserInformation(userPermission.UserId);
-            return RedirectToAction("Index", user);
+            Role role = GetRoleInformation(rolePermission.RoleId);
+            return RedirectToAction("Index", role);
         }
-
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
-using userDemo1.Context;
 using userDemo1.Models;
 
 namespace userDemo1.Controllers
@@ -9,18 +8,6 @@ namespace userDemo1.Controllers
     public class OperationsController : Controller
     {
         private static List<Operation> operationList = null;
-
-        private bool IsUserLoggedIn()
-        {
-            if (Session["LoggedInUser"] != null)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
 
         public ActionResult Index()
         {
@@ -35,14 +22,10 @@ namespace userDemo1.Controllers
                         new Operation { Id=2945, Name="Order- Baby Suit 24 Size", PaymentMethod="COD",StartDate="14 Jul 2022", EndDate="27 Jul 2022",Status= OpStatus.Packing}
                     };
             }
-            if (IsUserLoggedIn())
+            if (Authentication.IsUserLoggedIn())
             {
-                var loggedInUser = (User)Session["LoggedInUser"];
-                TempData["ViewAuthorized"] = loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "operations" && x.ViewPermission == true).Any();
-                TempData["AddAuthorized"] = loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "operations" && x.AddPermission == true).Any();
-                TempData["EditAuthorized"] = loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "operations" && x.EditPermission == true).Any();
-                TempData["DeleteAuthorized"] = loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "operations" && x.DeletePermission == true).Any();
-
+                var userRights = Authorization.GetAuthorizedRights("Operations");
+                TempData["userRights"] = userRights;
                 return View(operationList);
             }
             else
@@ -53,10 +36,10 @@ namespace userDemo1.Controllers
 
         public ActionResult Delete(int Id)
         {
-            if (IsUserLoggedIn())
+            if (Authentication.IsUserLoggedIn())
             {
-                var loggedInUser = (User)Session["LoggedInUser"];
-                if (loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "operations" && x.DeletePermission == true).Any())
+                var userRights = Authorization.GetAuthorizedRights("Operations");
+                if (userRights.DeleteAuthorized)
                 {
                     var operationRecord = operationList.Where(x => x.Id == Id).FirstOrDefault();
                     if (operationRecord != null)
@@ -76,7 +59,7 @@ namespace userDemo1.Controllers
         [HttpGet]
         public ActionResult Create(Operation editModel)
         {
-            if (IsUserLoggedIn())
+            if (Authentication.IsUserLoggedIn())
             {
                 return View(editModel);
             }
@@ -91,18 +74,18 @@ namespace userDemo1.Controllers
         {
             if (ModelState.IsValid)
             {
-                var loggedInUser = (User)Session["LoggedInUser"];
+                var userRights = Authorization.GetAuthorizedRights("Operations");
 
                 if (model.Id == 0)
                 {
-                    if (loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "operations" && x.AddPermission == true).Any())
+                    if (userRights.AddAuthorized)
                     {
                         operationList.Add(model);
                     }
                 }
                 else
                 {
-                    if (loggedInUser.UserPermissions.Where(x => x.ModuleName.ToLower() == "operations" && x.EditPermission == true).Any())
+                    if (userRights.EditAuthorized)
                     {
                         Operation operationRecord = operationList.Where(x => x.Id == model.Id).FirstOrDefault();
 
